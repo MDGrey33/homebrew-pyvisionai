@@ -5,15 +5,20 @@ class Pyvisionai < Formula
   sha256 "[SHA256_HASH]"  # Will be updated with actual hash after first release
   license "Apache-2.0"
 
-  depends_on "python@3.8"
+  depends_on "python@3.12"
   depends_on "libreoffice" => :cask
   depends_on "poppler"
 
   def install
-    virtualenv_create(libexec, "python3")
-    system libexec/"bin/pip", "install", "."
+    venv = virtualenv_create(libexec, "python3")
+    system libexec/"bin/pip", "install", "-v", "--no-binary", ":all:",
+                              "--ignore-installed", buildpath
     system libexec/"bin/pip", "install", "playwright"
     system libexec/"bin/playwright", "install"
+
+    # Create bin stubs for the executables
+    bin.install Dir["#{libexec}/bin/*"]
+    bin.env_script_all_files(libexec/"bin", PYTHONPATH: ENV["PYTHONPATH"])
   end
 
   def caveats
@@ -23,7 +28,7 @@ class Pyvisionai < Formula
 
       For local image description (optional):
         brew install ollama
-        ollama pull llama3.2-vision
+        ollama pull llama2-vision
     EOS
   end
 
