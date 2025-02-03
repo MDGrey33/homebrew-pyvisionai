@@ -74,7 +74,14 @@ class Pyvisionai < Formula
     ENV.append "CFLAGS", "-I#{Formula["freetype"].opt_include}/freetype2 -I#{Formula["jpeg"].opt_include}"
     ENV.append "LDFLAGS", "-L#{Formula["jpeg"].opt_lib}"
 
+    # Install Python virtualenv and dependencies
     virtualenv_install_with_resources
+
+    # Ensure missing dependencies are installed
+    venv_path = libexec/"bin/python"
+    %w[python-docx python-pptx].each do |pkg|
+      system venv_path, "-m", "pip", "install", pkg
+    end
   end
 
   def caveats
