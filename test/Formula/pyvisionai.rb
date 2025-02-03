@@ -83,34 +83,39 @@ class PyVisionAI < Formula
   end
 
   def caveats
-    warnings = []
-    
-    warnings << "LibreOffice is not installed. Some document processing features may be limited.\n" \
-               "To install: brew install --cask libreoffice" unless which("libreoffice")
-
     <<~EOS
       PyVisionAI Installation Complete!
 
-      Quick Start:
-      -----------
-      • Set up OpenAI API key (for cloud features):
+      Required Setup:
+      --------------
+      For cloud-based image description (recommended):
         export OPENAI_API_KEY='your-api-key'
+
+      Optional Components:
+      ------------------
+      1. Local Image Description:
+         brew install ollama
+         ollama pull llama2-vision
+
+      2. Office Document Processing:
+         brew install --cask libreoffice
+         # Or for specific language support:
+         brew install --cask libreoffice-language-pack
+
+      Note: This formula requires Python 3.11+ and installs its own copy of Python.
       
-      • For local models (alternative to OpenAI):
-        brew install ollama
-        ollama pull llama2-vision
-
-      Documentation:
+      Usage Examples:
       -------------
-      For detailed setup instructions, usage examples, and troubleshooting:
-      https://github.com/roland/homebrew-pyvisionai#readme
-
-      #{warnings.empty? ? "" : "\nWarnings:\n---------\n• #{warnings.join("\n• ")}"}
-
-      Basic Usage:
-      -----------
-      describe-image -i path/to/image.jpg    # Describe an image
-      file-extract -t pdf -s document.pdf    # Extract text from a PDF
+      # Extract text from a PDF:
+      file-extract path/to/document.pdf
+      
+      # Describe an image:
+      describe-image path/to/image.jpg
+      
+      #{if !which("libreoffice")
+          "\nWarning: LibreOffice is not installed. Some document processing features may be limited.\n" \
+          "To install: brew install --cask libreoffice"
+        end}
     EOS
   end
 
