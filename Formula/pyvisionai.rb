@@ -1,4 +1,4 @@
-class PyVisionAI < Formula
+class Pyvisionai < Formula
   include Language::Python::Virtualenv
   
   desc "Extract and describe content from documents using Vision Language Models"
