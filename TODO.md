@@ -1,30 +1,42 @@
-# PyVisionAI Homebrew Formula TODO
+# PyVisionAI TODO List
 
 ## High Priority
-- [ ] Fix Git merge conflict in formula (remove Playwright auto-installation)
-- [ ] Fix libreoffice dependency (currently "Can't find dependency 'libreoffice'")
-- [ ] Test clean installation flow on a new machine:
-  ```bash
-  brew tap mdgrey33/pyvisionai
-  brew install pyvisionai
-  playwright install chromium
-  brew install --cask libreoffice  # optional
-  ```
 
-## Documentation
-- [ ] Update repository links in README (currently pointing to roland/homebrew-pyvisionai instead of mdgrey33/homebrew-pyvisionai)
-- [ ] Add troubleshooting guide for common installation issues:
-  - Playwright browser installation
-  - LibreOffice setup
-  - Python environment issues
-- [ ] Document version upgrade process
-- [ ] Add contribution guidelines for formula maintenance
+- [ ] LibreOffice Integration:
+  - [ ] Evaluate making LibreOffice a required dependency
+  - [ ] Add formula tests for LibreOffice functionality
+  - [ ] Improve error messages when LibreOffice is missing
+  - [ ] Document specific LibreOffice version requirements
 
-## Future Improvements
-- [ ] Add version compatibility matrix:
-  - Python version requirements (currently 3.11)
-  - Playwright version compatibility (currently 1.41.0)
-  - LibreOffice version requirements
-  - Ollama version compatibility
-- [ ] Add automated testing for formula installation
-- [ ] Consider making LibreOffice a required dependency if it's essential 
+- [ ] Installation Testing:
+  - [ ] Test on fresh macOS installation (both Intel and Apple Silicon)
+  - [ ] Verify all dependencies are correctly installed
+  - [ ] Test upgrade path from previous versions
+  - [ ] Document any platform-specific requirements
+
+## Formula Improvements
+
+- [ ] Dependency Management:
+  - [ ] Review and optimize dependency list
+  - [ ] Add dependency version constraints where needed
+  - [ ] Consider bundling common dependencies
+  - [ ] Improve handling of optional dependencies
+
+- [ ] Formula Testing:
+  - [ ] Add automated installation tests
+  - [ ] Create test suite for formula updates
+  - [ ] Add CI/CD pipeline for formula testing
+  - [ ] Test with different Python versions
+
+## Future Enhancements
+
+- [ ] Performance:
+  - [ ] Optimize installation size
+  - [ ] Reduce number of dependencies where possible
+  - [ ] Improve installation speed
+
+- [ ] User Experience:
+  - [ ] Add post-installation verification script
+  - [ ] Improve error messages and warnings
+  - [ ] Add installation progress indicators
+  - [ ] Create interactive installation guide

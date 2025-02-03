@@ -18,6 +18,15 @@ playwright install chromium
 brew install --cask libreoffice
 ```
 
+## Version Compatibility
+
+| Component | Version | Notes |
+|-----------|---------|-------|
+| Python | 3.11+ | Required for all functionality |
+| Playwright | 1.41.0 | Required for web content processing |
+| LibreOffice | 7.5+ | Required for document processing features |
+| Ollama | 0.1.17+ | Required for local model inference |
+
 ## Setup Guide
 
 ### 1. Required Setup - OpenAI API Key
@@ -96,48 +105,149 @@ file-extract -t pptx -s path/to/presentation.pptx -o output/dir
 
 ### Common Issues
 
-1. **Playwright Issues**
+1. **Installation Issues**
+   ```bash
+   # If installation fails, try:
+   brew update && brew upgrade
+   brew uninstall pyvisionai
+   brew install pyvisionai
+   
+   # If you get permission errors:
+   sudo chown -R $(whoami) $(brew --prefix)/*
+   ```
+
+2. **Playwright Issues**
    ```bash
    # Reinstall Playwright
    /opt/homebrew/opt/pyvisionai/libexec/bin/pip install playwright==1.41.0
    
    # Reinstall browsers
    /opt/homebrew/opt/pyvisionai/libexec/bin/playwright install chromium
+   
+   # If you get browser launch errors:
+   /opt/homebrew/opt/pyvisionai/libexec/bin/playwright install-deps
    ```
 
-2. **LibreOffice Issues**
+3. **LibreOffice Issues**
    - Ensure LibreOffice is installed: `brew install --cask libreoffice`
    - Check if LibreOffice is in PATH: `which libreoffice`
+   - If document processing fails:
+     ```bash
+     # Verify LibreOffice installation
+     /Applications/LibreOffice.app/Contents/MacOS/soffice --version
+     
+     # Try reinstalling
+     brew uninstall --cask libreoffice
+     brew install --cask libreoffice
+     ```
 
-3. **Python Environment Issues**
+4. **Python Environment Issues**
    ```bash
    # Check installed packages
    /opt/homebrew/opt/pyvisionai/libexec/bin/pip list
    
    # Verify Python version
    /opt/homebrew/opt/pyvisionai/libexec/bin/python --version
+   
+   # If packages are missing:
+   /opt/homebrew/opt/pyvisionai/libexec/bin/pip install -r <(brew cat pyvisionai | grep -A 999 "resource.*do$" | grep -B 999 "^end$" | grep "^  resource")
    ```
+
+5. **API Key Issues**
+   - Check if the key is set: `echo $OPENAI_API_KEY`
+   - Verify key format: Should start with 'sk-'
+   - Test API access:
+     ```bash
+     curl https://api.openai.com/v1/models \
+       -H "Authorization: Bearer $OPENAI_API_KEY"
+     ```
+
+6. **Local Model Issues**
+   ```bash
+   # Check Ollama service
+   ollama list
+   
+   # Restart Ollama service
+   brew services restart ollama
+   
+   # Pull model again
+   ollama pull llama2-vision
+   ```
+
+### Version Upgrade Process
+
+When upgrading PyVisionAI:
+1. Update Homebrew: `brew update`
+2. Upgrade package: `brew upgrade pyvisionai`
+3. Verify installation: `pyvisionai --version`
+4. Update Playwright: `playwright install chromium`
+5. Test functionality with a simple command: `describe-image --help`
 
 ### Getting Help
 
-- For installation and packaging issues: [Homebrew Tap Issues](https://github.com/roland/homebrew-pyvisionai/issues)
+- For installation and packaging issues: [Homebrew Tap Issues](https://github.com/mdgrey33/homebrew-pyvisionai/issues)
 - For general usage and features: [PyVisionAI Issues](https://github.com/MDGrey33/pyvisionai/issues)
 - For API and usage docs: [PyVisionAI Documentation](https://github.com/MDGrey33/pyvisionai#readme)
 
 ## Additional Resources
 
-- [Homebrew Tap Repository](https://github.com/roland/homebrew-pyvisionai) - Installation and packaging
+- [Homebrew Tap Repository](https://github.com/mdgrey33/homebrew-pyvisionai) - Installation and packaging
 - [PyVisionAI Repository](https://github.com/MDGrey33/pyvisionai) - Core functionality and usage
 - [OpenAI API Documentation](https://platform.openai.com/docs/introduction)
 - [Ollama Documentation](https://github.com/ollama/ollama)
 
 ## Contributing
 
+### Reporting Issues
+
 If you find issues with the Homebrew installation or packaging:
-1. Check if the issue is already reported in our [Issues](https://github.com/roland/homebrew-pyvisionai/issues)
+1. Check if the issue is already reported in our [Issues](https://github.com/mdgrey33/homebrew-pyvisionai/issues)
 2. If not, open a new issue with:
    - Your system information (`brew config`)
    - Installation logs
    - Steps to reproduce
 
 For issues with PyVisionAI functionality, please report them to the [main repository](https://github.com/MDGrey33/pyvisionai/issues).
+
+### Contributing to the Formula
+
+1. **Fork and Clone**
+   ```bash
+   git clone https://github.com/mdgrey33/homebrew-pyvisionai.git
+   cd homebrew-pyvisionai
+   ```
+
+2. **Make Changes**
+   - Update formula in `Formula/pyvisionai.rb`
+   - Test locally:
+     ```bash
+     brew uninstall pyvisionai
+     brew install --build-from-source ./Formula/pyvisionai.rb
+     ```
+   - Run brew audit:
+     ```bash
+     brew audit --strict --online Formula/pyvisionai.rb
+     ```
+
+3. **Submit Changes**
+   - Create a new branch: `git checkout -b feature/your-feature`
+   - Commit changes: `git commit -am "Description of changes"`
+   - Push to fork: `git push origin feature/your-feature`
+   - Open a Pull Request
+
+### Development Guidelines
+
+1. **Version Updates**
+   - Update SHA256 hash: `brew fetch pyvisionai --build-from-source`
+   - Test with fresh installation
+   - Update version compatibility matrix
+
+2. **Dependencies**
+   - Keep dependencies minimal and well-documented
+   - Test with both required and optional dependencies
+   - Document any changes in dependency requirements
+
+3. **Testing**
+   - Test on a fresh macOS installation
+   - Verify all installation paths
+   - Check both Intel and Apple Silicon compatibility
