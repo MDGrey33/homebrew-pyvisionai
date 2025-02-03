@@ -71,8 +71,7 @@ class Pyvisionai < Formula
     ENV["PNG_ROOT"] = Formula["libpng"].opt_prefix
 
     # Set build flags
-    ENV.append "CPPFLAGS", "-I#{Formula["freetype"].opt_include}/freetype2"
-    ENV.append "CPPFLAGS", "-I#{Formula["jpeg"].opt_include}"
+    ENV.append "CFLAGS", "-I#{Formula["freetype"].opt_include}/freetype2 -I#{Formula["jpeg"].opt_include}"
     ENV.append "LDFLAGS", "-L#{Formula["jpeg"].opt_lib}"
 
     virtualenv_install_with_resources
@@ -114,18 +113,21 @@ class Pyvisionai < Formula
   end
 
   def post_install
+    venv_path = libexec/"bin/python"
+
     # Verify Python environment
     ohai "Verifying Python environment..."
-    system "#{bin}/python3", "-c", "import sys; assert sys.version_info >= (3, 11)"
+    system venv_path, "-c", "import sys; assert sys.version_info >= (3, 11)"
     
     # Verify key dependencies
     ohai "Verifying package installation..."
-    %w[requests PIL playwright docx pptx openai].each do |pkg|
-      system "#{bin}/python3", "-c", "import #{pkg}"
+    %w[requests python_docx python_pptx openai].each do |pkg|
+      system venv_path, "-c", "import #{pkg}"
     end
 
     # Check for LibreOffice
-    unless which("libreoffice")
+    libreoffice_path = "/Applications/LibreOffice.app/Contents/MacOS/soffice"
+    unless File.exist?(libreoffice_path)
       opoo "Notice: LibreOffice is not installed"
       opoo "Some document processing features require LibreOffice"
       opoo "To install: brew install --cask libreoffice"
@@ -133,22 +135,24 @@ class Pyvisionai < Formula
   end
 
   test do
+    venv_path = libexec/"bin/python"
+    
     # Basic command help tests
     system "#{bin}/file-extract", "--help"
     system "#{bin}/describe-image", "--help"
     
     # Verify Python version
     assert_match "3.11",
-      shell_output("#{bin}/python3 -c 'import sys; print(f\"{sys.version_info.major}.{sys.version_info.minor}\")'")
+      shell_output("#{venv_path} -c 'import sys; print(f\"{sys.version_info.major}.{sys.version_info.minor}\")'")
     
     # Verify key dependencies
-    %w[requests PIL playwright docx pptx openai].each do |pkg|
-      system "#{bin}/python3", "-c", "import #{pkg}"
+    %w[requests python_docx python_pptx openai].each do |pkg|
+      system venv_path, "-c", "import #{pkg}"
     end
 
     # Test environment variables
     ENV["OPENAI_API_KEY"] = "dummy_key_for_test"
     assert_match "OPENAI_API_KEY is set",
-      shell_output("#{bin}/python3 -c 'import os; print(\"OPENAI_API_KEY is set\" if \"OPENAI_API_KEY\" in os.environ else \"not set\")'")
+      shell_output("#{venv_path} -c 'import os; print(\"OPENAI_API_KEY is set\" if \"OPENAI_API_KEY\" in os.environ else \"not set\")'")
   end
 end
