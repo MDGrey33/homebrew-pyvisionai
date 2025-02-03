@@ -6,10 +6,16 @@ This is the official Homebrew tap for PyVisionAI, a tool for extracting and desc
 
 ```bash
 # Add the tap
-brew tap roland/pyvisionai
+brew tap mdgrey33/pyvisionai
 
 # Install PyVisionAI
 brew install pyvisionai
+
+# Install Playwright browsers (required for web content)
+playwright install chromium
+
+# Optional: Install LibreOffice for document processing
+brew install --cask libreoffice
 ```
 
 ## Setup Guide
