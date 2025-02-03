@@ -87,8 +87,9 @@ class Pyvisionai < Formula
   def caveats
     warnings = []
     
+    libreoffice_path = "/Applications/LibreOffice.app/Contents/MacOS/soffice"
     warnings << "LibreOffice is not installed. Some document processing features may be limited.\n" \
-               "To install: brew install --cask libreoffice" unless which("libreoffice")
+               "To install: brew install --cask libreoffice" unless File.exist?(libreoffice_path)
 
     <<~EOS
       PyVisionAI Installation Complete!
@@ -128,7 +129,7 @@ class Pyvisionai < Formula
     
     # Verify key dependencies
     ohai "Verifying package installation..."
-    %w[requests python_docx python_pptx openai].each do |pkg|
+    %w[requests docx pptx openai].each do |pkg|
       system venv_path, "-c", "import #{pkg}"
     end
 
@@ -153,7 +154,7 @@ class Pyvisionai < Formula
       shell_output("#{venv_path} -c 'import sys; print(f\"{sys.version_info.major}.{sys.version_info.minor}\")'")
     
     # Verify key dependencies
-    %w[requests python_docx python_pptx openai].each do |pkg|
+    %w[requests docx pptx openai].each do |pkg|
       system venv_path, "-c", "import #{pkg}"
     end
 
