@@ -76,10 +76,6 @@ class Pyvisionai < Formula
     ENV.append "LDFLAGS", "-L#{Formula["jpeg"].opt_lib}"
 
     virtualenv_install_with_resources
-    
-    # Install Playwright and browsers
-    system libexec/"bin/pip", "install", "playwright==1.41.0"
-    system libexec/"bin/python", "-m", "playwright", "install"
   end
 
   def caveats
@@ -99,6 +95,9 @@ class Pyvisionai < Formula
       • For local models (alternative to OpenAI):
         brew install ollama
         ollama pull llama2-vision
+
+      • To use Playwright features, install browsers:
+        playwright install chromium
 
       Documentation:
       -------------
