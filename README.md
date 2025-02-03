@@ -114,12 +114,24 @@ file-extract -t pptx -s path/to/presentation.pptx -o output/dir
 
 ### Getting Help
 
-- Report issues on GitHub: [PyVisionAI Issues](https://github.com/MDGrey33/pyvisionai/issues)
-- Check the [PyVisionAI Documentation](https://github.com/MDGrey33/pyvisionai#readme)
-- Review [OpenAI API Documentation](https://platform.openai.com/docs/introduction)
+- For installation and packaging issues: [Homebrew Tap Issues](https://github.com/roland/homebrew-pyvisionai/issues)
+- For general usage and features: [PyVisionAI Issues](https://github.com/MDGrey33/pyvisionai/issues)
+- For API and usage docs: [PyVisionAI Documentation](https://github.com/MDGrey33/pyvisionai#readme)
 
 ## Additional Resources
 
-- [PyVisionAI Main Repository](https://github.com/MDGrey33/pyvisionai)
+- [Homebrew Tap Repository](https://github.com/roland/homebrew-pyvisionai) - Installation and packaging
+- [PyVisionAI Repository](https://github.com/MDGrey33/pyvisionai) - Core functionality and usage
 - [OpenAI API Documentation](https://platform.openai.com/docs/introduction)
 - [Ollama Documentation](https://github.com/ollama/ollama)
+
+## Contributing
+
+If you find issues with the Homebrew installation or packaging:
+1. Check if the issue is already reported in our [Issues](https://github.com/roland/homebrew-pyvisionai/issues)
+2. If not, open a new issue with:
+   - Your system information (`brew config`)
+   - Installation logs
+   - Steps to reproduce
+
+For issues with PyVisionAI functionality, please report them to the [main repository](https://github.com/MDGrey33/pyvisionai/issues).
