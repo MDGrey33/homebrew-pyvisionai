@@ -79,7 +79,7 @@ class Pyvisionai < Formula
     
     # Install Playwright and browsers
     system libexec/"bin/pip", "install", "playwright==1.41.0"
-    system libexec/"bin/playwright", "install"
+    system libexec/"bin/python", "-m", "playwright", "install"
   end
 
   def caveats
