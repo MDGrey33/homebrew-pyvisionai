@@ -26,13 +26,13 @@ class Pyvisionai < Formula
   
   # Python package resources
   resource "requests" do
-    url "https://files.pythonhosted.org/packages/9d/be/10918a2eac4ae9f02f6cfe6414b7a155ccd8f7f9d4380d62fd5b955065c3/requests-2.31.0.tar.gz"
-    sha256 "942c5a758f98d790eaed1a29cb6eefc7ffb0d1cf7af05c3d2791656dbd6ad1e1"
+    url "https://files.pythonhosted.org/packages/28/a2/423f4d16d6934ef502f10ad56673719dd4345e656aedbd6687ccc359ffc5/requests-2.32.0.tar.gz"
+    sha256 "fa5490319474c82ef1d2c9bc459d3652e3ae4ef4c4ebdd18a21145a47ca4b6b8"
   end
 
   resource "pillow" do
-    url "https://files.pythonhosted.org/packages/f8/3e/32cbd0129a28686621434cbf17bb64bf1458bfb838f1f668262fefce145c/pillow-10.2.0.tar.gz"
-    sha256 "e87f0b2c78157e12d7686b27d63c070fd65d994e8ddae6f328e0dcf4a0cd007e"
+    url "https://files.pythonhosted.org/packages/a5/26/0d95c04c868f6bdb0c447e3ee2de5564411845e36a858cfd63766bc7b563/pillow-11.0.0.tar.gz"
+    sha256 "72bacbaf24ac003fea9bff9837d1eedb6088758d41e100c1552930151f677739"
   end
 
   resource "ollama" do
@@ -55,9 +55,24 @@ class Pyvisionai < Formula
     sha256 "216f325a24ed8578e929b0f1b3fb2052165f3b04b0461818adaa51aa29c71f8a"
   end
 
-  resource "virtualenv" do
-    url "https://files.pythonhosted.org/packages/a7/ca/f23dcb02e161a9bba141b1c08aa50e8da6ea25e6d780528f1d385a3efe25/virtualenv-20.29.1.tar.gz"
-    sha256 "b8b8970138d32fb606192cb97f6cd4bb644fa486be9308fb9b63f81091b5dc35"
+  resource "pdf2image" do
+    url "https://files.pythonhosted.org/packages/00/d8/b280f01045555dc257b8153c00dee3bc75830f91a744cd5f84ef3a0a64b1/pdf2image-1.17.0.tar.gz"
+    sha256 "eaa959bc116b420dd7ec415fcae49b98100dda3dd18cd2fdfa86d09f112f6d57"
+  end
+
+  resource "pdfminer-six" do
+    url "https://files.pythonhosted.org/packages/31/b1/a43e3bd872ded4deea4f8efc7aff1703fca8c5455d0c06e20506a06a44ff/pdfminer.six-20231228.tar.gz"
+    sha256 "6004da3ad1a7a4d45930cb950393df89b068e73be365a6ff64a838d37bcb08c4"
+  end
+
+  resource "pypdf" do
+    url "https://files.pythonhosted.org/packages/49/6c/4ffb864f1f41b7ef7bf8a397b16888cf191161a98d4c345fa32ec5aa1454/pypdf-4.1.0.tar.gz"
+    sha256 "01c3257ec908676efd60a4537e525b89d48e0852bc92b4e0aa4cc646feda17cc"
+  end
+
+  resource "playwright" do
+    url "https://files.pythonhosted.org/packages/8d/63/239ffc94f3856932ea8cf4bf4c2cebeda8442ccdcf2e685882ab666b244b/playwright-1.41.0-py3-none-macosx_11_0_arm64.whl"
+    sha256 "9d34f472d174e55d8f12265e10d11ba21be99bf0661ccbf1f9b048312696d5e8"
   end
 
   def install
@@ -74,13 +89,58 @@ class Pyvisionai < Formula
     ENV.append "CFLAGS", "-I#{Formula["freetype"].opt_include}/freetype2 -I#{Formula["jpeg"].opt_include}"
     ENV.append "LDFLAGS", "-L#{Formula["jpeg"].opt_lib}"
 
-    # Install Python virtualenv and dependencies
-    virtualenv_install_with_resources
+    # Create virtualenv and install dependencies
+    venv = virtualenv_create(libexec, "python3.11")
+    
+    # Install all resources except playwright
+    resources.each do |r|
+      next if r.name == "playwright"
+      r.stage do
+        system libexec/"bin/python", "-m", "pip", "install", "."
+      end
+    end
 
-    # Ensure missing dependencies are installed
+    # Install playwright wheel file
+    resource("playwright").stage do
+      system libexec/"bin/python", "-m", "pip", "install", Dir["*.whl"].first
+    end
+
+    # Install the package itself
+    system libexec/"bin/python", "-m", "pip", "install", "."
+
+    # Install Playwright browsers
+    ohai "Installing Playwright browsers..."
+    system libexec/"bin/playwright", "install", "chromium"
+  end
+
+  def post_install
     venv_path = libexec/"bin/python"
-    %w[python-docx python-pptx].each do |pkg|
-      system venv_path, "-m", "pip", "install", pkg
+
+    # Verify Python environment
+    ohai "Verifying Python environment..."
+    system venv_path, "-c", "import sys; assert sys.version_info >= (3, 11)"
+    
+    # Verify all key dependencies
+    ohai "Verifying package installation..."
+    %w[requests PIL ollama docx pptx openai pdf2image pdfminer pypdf playwright].each do |pkg|
+      system venv_path, "-c", "import #{pkg}"
+    end
+    
+    # Verify system dependencies
+    ohai "Verifying system dependencies..."
+    system "pkg-config", "--exists", "poppler-cpp"
+    system "pkg-config", "--exists", "freetype2"
+    
+    # Check Playwright setup
+    ohai "Checking Playwright installation..."
+    system venv_path, "-m", "playwright", "install", "--help"
+
+    # Check for LibreOffice
+    libreoffice_path = "/Applications/LibreOffice.app/Contents/MacOS/soffice"
+    if !File.exist?(libreoffice_path)
+      opoo "Notice: LibreOffice is not installed"
+      opoo "Some document processing features require LibreOffice"
+      opoo "To install: brew install --cask libreoffice"
     end
   end
 
@@ -88,8 +148,10 @@ class Pyvisionai < Formula
     warnings = []
     
     libreoffice_path = "/Applications/LibreOffice.app/Contents/MacOS/soffice"
-    warnings << "LibreOffice is not installed. Some document processing features may be limited.\n" \
-               "To install: brew install --cask libreoffice" unless File.exist?(libreoffice_path)
+    if !File.exist?(libreoffice_path)
+      warnings << "LibreOffice is not installed. Some document processing features may be limited.\n" \
+                 "To install: brew install --cask libreoffice"
+    end
 
     <<~EOS
       PyVisionAI Installation Complete!
@@ -120,28 +182,6 @@ class Pyvisionai < Formula
     EOS
   end
 
-  def post_install
-    venv_path = libexec/"bin/python"
-
-    # Verify Python environment
-    ohai "Verifying Python environment..."
-    system venv_path, "-c", "import sys; assert sys.version_info >= (3, 11)"
-    
-    # Verify key dependencies
-    ohai "Verifying package installation..."
-    %w[requests docx pptx openai].each do |pkg|
-      system venv_path, "-c", "import #{pkg}"
-    end
-
-    # Check for LibreOffice
-    libreoffice_path = "/Applications/LibreOffice.app/Contents/MacOS/soffice"
-    unless File.exist?(libreoffice_path)
-      opoo "Notice: LibreOffice is not installed"
-      opoo "Some document processing features require LibreOffice"
-      opoo "To install: brew install --cask libreoffice"
-    end
-  end
-
   test do
     venv_path = libexec/"bin/python"
     
@@ -150,17 +190,16 @@ class Pyvisionai < Formula
     system "#{bin}/describe-image", "--help"
     
     # Verify Python version
-    assert_match "3.11",
-      shell_output("#{venv_path} -c 'import sys; print(f\"{sys.version_info.major}.{sys.version_info.minor}\")'")
+    assert_match "3.11", shell_output("#{venv_path} -c 'import sys; print(f\"{sys.version_info.major}.{sys.version_info.minor}\")'")
     
-    # Verify key dependencies
-    %w[requests docx pptx openai].each do |pkg|
+    # Verify all dependencies
+    %w[requests pillow ollama docx pptx openai pdf2image pdfminer pypdf playwright].each do |pkg|
       system venv_path, "-c", "import #{pkg}"
     end
 
     # Test environment variables
     ENV["OPENAI_API_KEY"] = "dummy_key_for_test"
     assert_match "OPENAI_API_KEY is set",
-      shell_output("#{venv_path} -c 'import os; print(\"OPENAI_API_KEY is set\" if \"OPENAI_API_KEY\" in os.environ else \"not set\")'")
+      shell_output("#{venv_path} -c 'import os; print(\"OPENAI_API_KEY\" in os.environ) if \"OPENAI_API_KEY\" in os.environ else \"not set\"'")
   end
 end
