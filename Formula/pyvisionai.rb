@@ -3,8 +3,8 @@ class Pyvisionai < Formula
   
   desc "Extract and describe content from documents using Vision Language Models"
   homepage "https://github.com/MDGrey33/pyvisionai"
-  url "https://github.com/MDGrey33/pyvisionai/archive/refs/tags/v0.2.7.tar.gz"
-  sha256 "353f30af39ab266f8a4589053a452cb0122c5fbcfc8297a0e7b61a2bfe69ff3d"
+  url "https://github.com/MDGrey33/pyvisionai/archive/refs/tags/v0.3.1.tar.gz"
+  sha256 "554327c6400dfcd01d05fbaf1868ece4dde4656f8fa951779c7000a3f9f3e7d2"
   license "Apache-2.0"
   
   # Formula maintained at: https://github.com/roland/homebrew-pyvisionai
@@ -75,6 +75,11 @@ class Pyvisionai < Formula
     sha256 "9d34f472d174e55d8f12265e10d11ba21be99bf0661ccbf1f9b048312696d5e8"
   end
 
+  resource "anthropic" do
+    url "https://files.pythonhosted.org/packages/15/74/2b2485fc120da834c0c5be07462541ec082e9fa8851d845f2587e480535a/anthropic-0.45.2.tar.gz"
+    sha256 "32a18b9ecd12c91b2be4cae6ca2ab46a06937b5aa01b21308d97a6d29794fb5e"
+  end
+
   def install
     # Set environment variables for building Pillow with system libraries
     ENV["JPEG_ROOT"] = Formula["jpeg"].opt_prefix
@@ -111,6 +116,10 @@ class Pyvisionai < Formula
     # Install Playwright browsers
     ohai "Installing Playwright browsers..."
     system libexec/"bin/playwright", "install", "chromium"
+
+    # Create symlinks for CLI commands
+    bin.install_symlink libexec/"bin/describe-image"
+    bin.install_symlink libexec/"bin/file-extract"
   end
 
   def post_install
@@ -158,10 +167,11 @@ class Pyvisionai < Formula
 
       Quick Start:
       -----------
-      • Set up OpenAI API key (for cloud features):
-        export OPENAI_API_KEY='your-api-key'
-      
-      • For local models (alternative to OpenAI):
+      • Set up API keys for cloud features:
+        export OPENAI_API_KEY='your-openai-key'     # For GPT-4 Vision (default)
+        export ANTHROPIC_API_KEY='your-claude-key'  # For Claude Vision
+
+      • For local models (alternative to cloud):
         brew install ollama
         ollama pull llama2-vision
 
@@ -177,8 +187,17 @@ class Pyvisionai < Formula
 
       Basic Usage:
       -----------
-      describe-image -i path/to/image.jpg    # Describe an image
-      file-extract -t pdf -s document.pdf    # Extract text from a PDF
+      # Describe an image using different models:
+      describe-image -s path/to/image.jpg                    # Using GPT-4 Vision (default)
+      describe-image -s image.jpg -m claude                  # Using Claude Vision
+      describe-image -s image.jpg -m llama                   # Using local Llama model
+      describe-image -s image.jpg -p "Focus on colors"       # With custom prompt
+
+      # Extract content from documents:
+      file-extract -t pdf -s document.pdf                    # Extract from PDF
+      file-extract -t docx -s document.docx                  # Extract from DOCX
+      file-extract -t pptx -s presentation.pptx              # Extract from PPTX
+      file-extract -t html -s webpage.html                   # Extract from HTML
     EOS
   end
 
