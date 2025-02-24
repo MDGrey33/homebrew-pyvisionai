@@ -13,9 +13,6 @@ brew install pyvisionai
 
 # Install Playwright browsers (required for web content)
 playwright install chromium
-
-# Optional: Install LibreOffice for document processing
-brew install --cask libreoffice
 ```
 
 ## Version Compatibility
@@ -24,32 +21,37 @@ brew install --cask libreoffice
 |-----------|---------|-------|
 | Python | 3.11+ | Required for all functionality |
 | Playwright | 1.41.0 | Required for web content processing |
-| LibreOffice | 7.5+ | Required for document processing features |
-| Ollama | 0.1.17+ | Required for local model inference |
+| Ollama | 0.4.7+ | Optional for local model inference |
 
 ## Setup Guide
 
-### 1. Required Setup - OpenAI API Key
+### 1. Required Setup - API Keys
 
 For cloud-based image description (recommended):
 
-1. Get your OpenAI API key:
-   - Go to [OpenAI API Keys](https://platform.openai.com/api-keys)
-   - Create a new API key if you don't have one
+1. Get your API keys:
+   - For GPT-4 Vision (default): [OpenAI API Keys](https://platform.openai.com/api-keys)
+   - For Claude Vision: [Anthropic Console](https://console.anthropic.com/)
    
-2. Set up the environment variable:
+2. Set up the environment variables:
    ```bash
-   export OPENAI_API_KEY='your-api-key'
+   # For GPT-4 Vision (default)
+   export OPENAI_API_KEY='your-openai-key'
+   
+   # For Claude Vision
+   export ANTHROPIC_API_KEY='your-claude-key'
    ```
 
-3. Make it persistent:
+3. Make them persistent:
    ```bash
    # For zsh (default on macOS)
-   echo 'export OPENAI_API_KEY=your-api-key' >> ~/.zshrc
+   echo 'export OPENAI_API_KEY=your-openai-key' >> ~/.zshrc
+   echo 'export ANTHROPIC_API_KEY=your-claude-key' >> ~/.zshrc
    source ~/.zshrc
 
    # For bash
-   echo 'export OPENAI_API_KEY=your-api-key' >> ~/.bashrc
+   echo 'export OPENAI_API_KEY=your-openai-key' >> ~/.bashrc
+   echo 'export ANTHROPIC_API_KEY=your-claude-key' >> ~/.bashrc
    source ~/.bashrc
    ```
 
@@ -68,14 +70,11 @@ ollama pull llama2-vision
 ollama serve
 ```
 
-#### Office Document Processing
-For full document processing capabilities:
+#### Enhanced Document Processing
+For enhanced document processing capabilities, you may want to install LibreOffice:
 ```bash
-# Install LibreOffice
+# Install LibreOffice (optional)
 brew install --cask libreoffice
-
-# For specific language support (optional)
-brew install --cask libreoffice-language-pack
 ```
 
 ## Usage Examples
@@ -83,10 +82,13 @@ brew install --cask libreoffice-language-pack
 ### Image Description
 ```bash
 # Using OpenAI (requires API key)
-describe-image -i path/to/image.jpg -u gpt4
+describe-image -s path/to/image.jpg -m gpt4
 
 # Using local model (requires Ollama)
-describe-image -i path/to/image.jpg -u llama
+describe-image -s path/to/image.jpg -m llama
+
+# With custom prompt
+describe-image -s path/to/image.jpg -p "Describe the colors and composition"
 ```
 
 ### Document Text Extraction
@@ -99,6 +101,9 @@ file-extract -t docx -s path/to/document.docx -o output/dir
 
 # Extract from PowerPoint
 file-extract -t pptx -s path/to/presentation.pptx -o output/dir
+
+# Extract with specific model
+file-extract -t pdf -s input.pdf -o output_dir -m claude
 ```
 
 ## Troubleshooting
@@ -128,32 +133,16 @@ file-extract -t pptx -s path/to/presentation.pptx -o output/dir
    /opt/homebrew/opt/pyvisionai/libexec/bin/playwright install-deps
    ```
 
-3. **LibreOffice Issues**
-   - Ensure LibreOffice is installed: `brew install --cask libreoffice`
-   - Check if LibreOffice is in PATH: `which libreoffice`
-   - If document processing fails:
-     ```bash
-     # Verify LibreOffice installation
-     /Applications/LibreOffice.app/Contents/MacOS/soffice --version
-     
-     # Try reinstalling
-     brew uninstall --cask libreoffice
-     brew install --cask libreoffice
-     ```
-
-4. **Python Environment Issues**
+3. **Python Environment Issues**
    ```bash
    # Check installed packages
    /opt/homebrew/opt/pyvisionai/libexec/bin/pip list
    
    # Verify Python version
    /opt/homebrew/opt/pyvisionai/libexec/bin/python --version
-   
-   # If packages are missing:
-   /opt/homebrew/opt/pyvisionai/libexec/bin/pip install -r <(brew cat pyvisionai | grep -A 999 "resource.*do$" | grep -B 999 "^end$" | grep "^  resource")
    ```
 
-5. **API Key Issues**
+4. **API Key Issues**
    - Check if the key is set: `echo $OPENAI_API_KEY`
    - Verify key format: Should start with 'sk-'
    - Test API access:
@@ -162,7 +151,7 @@ file-extract -t pptx -s path/to/presentation.pptx -o output/dir
        -H "Authorization: Bearer $OPENAI_API_KEY"
      ```
 
-6. **Local Model Issues**
+5. **Local Model Issues**
    ```bash
    # Check Ollama service
    ollama list
@@ -179,9 +168,9 @@ file-extract -t pptx -s path/to/presentation.pptx -o output/dir
 When upgrading PyVisionAI:
 1. Update Homebrew: `brew update`
 2. Upgrade package: `brew upgrade pyvisionai`
-3. Verify installation: `pyvisionai --version`
+3. Verify installation: `brew info pyvisionai`
 4. Update Playwright: `playwright install chromium`
-5. Test functionality with a simple command: `describe-image --help`
+5. Test functionality: `describe-image --help`
 
 ### Getting Help
 
@@ -235,19 +224,6 @@ For issues with PyVisionAI functionality, please report them to the [main reposi
    - Push to fork: `git push origin feature/your-feature`
    - Open a Pull Request
 
-### Development Guidelines
+## License
 
-1. **Version Updates**
-   - Update SHA256 hash: `brew fetch pyvisionai --build-from-source`
-   - Test with fresh installation
-   - Update version compatibility matrix
-
-2. **Dependencies**
-   - Keep dependencies minimal and well-documented
-   - Test with both required and optional dependencies
-   - Document any changes in dependency requirements
-
-3. **Testing**
-   - Test on a fresh macOS installation
-   - Verify all installation paths
-   - Check both Intel and Apple Silicon compatibility
+This project is licensed under the Apache License 2.0.
